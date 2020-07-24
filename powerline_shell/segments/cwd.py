@@ -1,4 +1,5 @@
 import os
+import string
 import sys
 from ..utils import warn, py3, BasicSegment
 
@@ -35,8 +36,13 @@ def maybe_shorten_name(powerline, name):
     return the name up to their specified length. Otherwise returns the full
     name."""
     max_size = powerline.segment_conf("cwd", "max_dir_size")
+    ignore_punctuation = powerline.segment_conf("cwd", "ignore_punct")
     if max_size:
-        return name[:max_size]
+        i = 0
+        if ignore_punctuation:
+            while i in range(len(name)) and name[i] in string.punctuation:
+                i += 1
+        return name[:max_size+i]
     return name
 
 
@@ -96,7 +102,7 @@ def add_cwd_segment(powerline):
             separator = None
             separator_fg = None
 
-        if not (is_last_dir and full_cwd):
+        if not (is_last_dir or full_cwd):
             name = maybe_shorten_name(powerline, name)
         powerline.append(' %s ' % name, fg, bg, separator, separator_fg)
 
